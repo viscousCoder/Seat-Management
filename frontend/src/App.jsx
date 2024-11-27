@@ -7,11 +7,11 @@ import "./App.css";
 import axios from "axios";
 
 // const socket = io("http://localhost:9001", {
-const socket = io("https://seat-management.onrender.com", {
-  query: {
-    token: localStorage.getItem("token"),
-  },
-});
+// const socket = io("https://seat-management.onrender.com", {
+//   query: {
+//     token: localStorage.getItem("token"),
+//   },
+// });
 
 const App = () => {
   const navigate = useNavigate();
@@ -21,21 +21,42 @@ const App = () => {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [youBooked, setYouBooked] = useState([]);
   const userId = localStorage.getItem("userId");
+  const [socket, setSocket] = useState(null);
+
+  // Initialize socket when token is available
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+    } else {
+      const newSocket = io("https://seat-management.onrender.com", {
+        query: {
+          token,
+        },
+      });
+      setSocket(newSocket);
+
+      // Cleanup on component unmount
+      return () => newSocket.close();
+    }
+  }, [navigate]);
 
   useEffect(() => {
-    fetchData();
-    socket.on("seatUpdated", (updatedSeat) => {
-      setData((prevSeats) =>
-        prevSeats.map((seat) =>
-          seat.seatNumber === updatedSeat.seatNumber ? updatedSeat : seat
-        )
-      );
-    });
+    if (socket) {
+      socket.on("seatUpdated", (updatedSeat) => {
+        setData((prevSeats) =>
+          prevSeats.map((seat) =>
+            seat.seatNumber === updatedSeat.seatNumber ? updatedSeat : seat
+          )
+        );
+      });
 
-    return () => {
-      socket.off("seatUpdated");
-    };
-  }, [btnClicked]);
+      // Cleanup the socket listener when the component unmounts or socket changes
+      return () => {
+        socket.off("seatUpdated");
+      };
+    }
+  }, [socket]);
 
   const fetchData = async () => {
     const token = localStorage.getItem("token");
@@ -44,7 +65,6 @@ const App = () => {
     }
     setLoading(true);
     try {
-      // const response = await fetch("http://localhost:9001/api/seats", {
       const response = await fetch(
         "https://seat-management.onrender.com/api/seats",
         {
@@ -52,14 +72,12 @@ const App = () => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-            name: "Aditya",
           },
         }
       );
       const result = await response.json();
 
       const availableSeats = result.availabelSeats || [];
-
       const pendingSeats = availableSeats.filter(
         (seat) => seat.pending.isPending && seat.pending.userId === userId
       );
@@ -93,33 +111,21 @@ const App = () => {
     selectedSeats.forEach((seatNumber) => {
       socket.emit("bookSeat", { seatNumber, userId });
     });
-    console.log("hiiii");
     setBtnClicked((prev) => !prev);
-
     setSelectedSeats([]);
   };
 
   async function handleResetApi() {
     await axios.post("https://seat-management.onrender.com/api/seats");
     setBtnClicked((prev) => !prev);
-    // const data = await axios.post("http://localhost:9001/api/seats");
-    // console.log(data.data.message);
   }
+
+  useEffect(() => {
+    fetchData();
+  }, [socket, btnClicked]); // Only run this effect when socket changes
 
   return (
     <Container>
-      {/* <Box
-        sx={{
-          width: "100%",
-          height: "calc(100rem - 81rem)",
-          bgcolor: "gray",
-          textAlign: "center",
-          alignContent: "center",
-        }}
-      >
-        Screen
-      </Box> */}
-
       <Box
         className="screen"
         sx={{ width: "100%", textAlign: "center", alignContent: "center" }}
