@@ -134,7 +134,7 @@ export default function Register() {
 
     try {
       const response = await axios.post(
-        "http://localhost:9001/api/user/register",
+        "https://seat-management.onrender.com/api/user/register",
         {
           username,
           email,

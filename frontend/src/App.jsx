@@ -6,7 +6,8 @@ import { useNavigate } from "react-router-dom";
 import "./App.css";
 import axios from "axios";
 
-const socket = io("http://localhost:9001", {
+// const socket = io("http://localhost:9001", {
+const socket = io("https://seat-management.onrender.com", {
   query: {
     token: localStorage.getItem("token"),
   },
@@ -43,14 +44,18 @@ const App = () => {
     }
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:9001/api/seats", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          name: "Aditya",
-        },
-      });
+      // const response = await fetch("http://localhost:9001/api/seats", {
+      const response = await fetch(
+        "https://seat-management.onrender.com/api/seats",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            name: "Aditya",
+          },
+        }
+      );
       const result = await response.json();
 
       const availableSeats = result.availabelSeats || [];
@@ -95,7 +100,7 @@ const App = () => {
   };
 
   async function handleResetApi() {
-    await axios.post("http://localhost:9001/api/seats");
+    await axios.post("https://seat-management.onrender.com/api/seats");
     setBtnClicked((prev) => !prev);
     // const data = await axios.post("http://localhost:9001/api/seats");
     // console.log(data.data.message);

@@ -98,7 +98,7 @@ export default function Login() {
     try {
       // Send login request to backend
       const response = await axios.post(
-        "http://localhost:9001/api/user/login",
+        "https://seat-management.onrender.com/api/user/login",
         {
           email,
           password,
