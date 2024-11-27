@@ -1,0 +1,63 @@
+/* .screen {
+  width: 500px;
+  height: 200px;
+  background: gray;
+  position: relative;
+  overflow: hidden;
+}
+.screen:after,
+.screen:before {
+  content: "";
+  background: white;
+  position: absolute;
+  top: -10px;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  border-radius: 0 0 50% 50%;
+}
+.screen:after {
+  top: auto;
+  bottom: -10px;
+  border-radius: 50% 50% 0 0;
+} */
+
+.screen {
+  margin: 0 auto;
+  width: 500px;
+  height: 200px;
+  border: 2px solid #000;
+  border-bottom: 0;
+  background: lightblue;
+  position: relative;
+  overflow: hidden;
+  background-image: linear-gradient(to right, #a9a7a7, #797979, #a9a7a7);
+  background-image: url("https://wallpapers.com/images/hd/2048x1152-pixel-xw4wru5dx6kpygol.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.screen:after {
+  content: "";
+  position: absolute;
+  height: 80px;
+  left: -10%;
+  right: -10%;
+  border-radius: 50%;
+  bottom: -62px;
+  background: #fff;
+  z-index: 2;
+}
+
+.screen:before {
+  content: "";
+  position: absolute;
+  height: 82px;
+  left: -10%;
+  right: -10%;
+  border-radius: 50%;
+  bottom: -62px;
+  background: #000;
+  z-index: 1;
+}
