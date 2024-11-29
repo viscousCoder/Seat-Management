@@ -40,6 +40,7 @@ export default function Compartment({ loading, data, onSeatSelect }) {
           padding: 2,
           borderRadius: "8px",
           marginBottom: 2,
+          justifyContent: "center",
           overflow: { xs: "auto", lg: "hidden" },
         }}
       >

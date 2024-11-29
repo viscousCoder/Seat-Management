@@ -29,6 +29,10 @@ export default function Seat({
           : "green",
         cursor: "pointer",
         border: "1px solid #000",
+        textAlign: "center",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       {seatNumber}

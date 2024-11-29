@@ -39,7 +39,7 @@ app.use("/api/user", userRouter);
 // Handle WebSocket connections
 
 io.on("connection", (socket) => {
-  console.log("A user connected");
+  console.log("A user connected hii");
   const token = socket.handshake.query.token;
 
   // Verify the token and retrieve user data
@@ -160,6 +160,57 @@ io.on("connection", (socket) => {
     } catch (err) {
       console.error("Error booking seat:", err);
       socket.emit("error", "There was an error booking the seat.");
+    }
+  });
+
+  socket.on("resetSeats", async () => {
+    console.log("hii");
+    try {
+      // Check if the user is authenticated (optional, based on your use case)
+      if (!socket.user) {
+        socket.emit("error", "User is not authenticated");
+        return;
+      }
+
+      // Reset all seats in the database
+      await Seat.updateMany(
+        {},
+        {
+          "booking.isBooked": false,
+          "booking.userId": null,
+          "pending.isPending": false,
+          "pending.userId": null,
+        }
+      );
+
+      // Emit the reset event to all clients
+      io.emit("resetSeats");
+
+      console.log("All seats have been reset successfully.");
+    } catch (err) {
+      console.error("Error resetting seats:", err);
+      socket.emit("error", "There was an error resetting the seats.");
+    }
+  });
+
+  socket.on("resetSeats", async () => {
+    try {
+      // Reset all seats in the database
+      await Seat.updateMany(
+        {},
+        {
+          "booking.isBooked": false,
+          "booking.userId": null,
+          "pending.isPending": false,
+          "pending.userId": null,
+        }
+      );
+
+      // Emit the reset event to all clients
+      io.emit("resetSeats");
+    } catch (err) {
+      console.error("Error resetting seats:", err);
+      socket.emit("error", "There was an error resetting the seats.");
     }
   });
 });

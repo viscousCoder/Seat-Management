@@ -6,13 +6,6 @@ import { useNavigate } from "react-router-dom";
 import "./App.css";
 import axios from "axios";
 
-// const socket = io("http://localhost:9001", {
-// const socket = io("https://seat-management.onrender.com", {
-//   query: {
-//     token: localStorage.getItem("token"),
-//   },
-// });
-
 const App = () => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
@@ -30,6 +23,7 @@ const App = () => {
       navigate("/login");
     } else {
       const newSocket = io("https://seat-management.onrender.com", {
+        // const newSocket = io("http://localhost:9001", {
         query: {
           token,
         },
@@ -41,6 +35,23 @@ const App = () => {
     }
   }, [navigate]);
 
+  // useEffect(() => {
+  //   if (socket) {
+  //     socket.on("seatUpdated", (updatedSeat) => {
+  //       setData((prevSeats) =>
+  //         prevSeats.map((seat) =>
+  //           seat.seatNumber === updatedSeat.seatNumber ? updatedSeat : seat
+  //         )
+  //       );
+  //     });
+
+  //     // Cleanup the socket listener when the component unmounts or socket changes
+  //     return () => {
+  //       socket.off("seatUpdated");
+  //     };
+  //   }
+  // }, [socket]);
+
   useEffect(() => {
     if (socket) {
       socket.on("seatUpdated", (updatedSeat) => {
@@ -51,9 +62,15 @@ const App = () => {
         );
       });
 
-      // Cleanup the socket listener when the component unmounts or socket changes
+      // Add the listener for the resetSeats event
+      socket.on("resetSeats", () => {
+        console.log("All seats have been reset.");
+        fetchData(); // Refetch the data to reflect the reset state
+      });
+
       return () => {
         socket.off("seatUpdated");
+        socket.off("resetSeats"); // Clean up the listener
       };
     }
   }, [socket]);
@@ -115,10 +132,17 @@ const App = () => {
     setSelectedSeats([]);
   };
 
-  async function handleResetApi() {
-    await axios.post("https://seat-management.onrender.com/api/seats");
-    setBtnClicked((prev) => !prev);
-  }
+  // async function handleResetApi() {
+  //   await axios.post("https://seat-management.onrender.com/api/seats");
+
+  //   setBtnClicked((prev) => !prev);
+  // }
+
+  const handleResetSeats = () => {
+    socket.emit("resetSeats", { userId });
+    setBtnClicked((prev) => !prev); // This will trigger a re-render
+    console.log("hii");
+  };
 
   useEffect(() => {
     fetchData();
@@ -164,7 +188,7 @@ const App = () => {
       <Box mt={3} textAlign="center">
         <Typography variant="h6">To reset all the seats</Typography>
 
-        <Button variant="contained" color="primary" onClick={handleResetApi}>
+        <Button variant="contained" color="primary" onClick={handleResetSeats}>
           Reset Seats
         </Button>
       </Box>
