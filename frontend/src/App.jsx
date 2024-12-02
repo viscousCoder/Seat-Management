@@ -1,10 +1,25 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import { Container, Box, Button, Typography } from "@mui/material";
+import {
+  Container,
+  Box,
+  Button,
+  Typography,
+  Dialog,
+  Backdrop,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  Card,
+  CardContent,
+  Divider,
+} from "@mui/material";
 import Compartment from "./components/Compartment";
 import { useNavigate } from "react-router-dom";
 import "./App.css";
-import axios from "axios";
+// import axios from "axios";
+import MovieCard from "./components/MovieCard";
 
 const App = () => {
   const navigate = useNavigate();
@@ -15,6 +30,7 @@ const App = () => {
   const [youBooked, setYouBooked] = useState([]);
   const userId = localStorage.getItem("userId");
   const [socket, setSocket] = useState(null);
+  const [open, setOpen] = useState(false);
 
   // Initialize socket when token is available
   useEffect(() => {
@@ -35,23 +51,6 @@ const App = () => {
     }
   }, [navigate]);
 
-  // useEffect(() => {
-  //   if (socket) {
-  //     socket.on("seatUpdated", (updatedSeat) => {
-  //       setData((prevSeats) =>
-  //         prevSeats.map((seat) =>
-  //           seat.seatNumber === updatedSeat.seatNumber ? updatedSeat : seat
-  //         )
-  //       );
-  //     });
-
-  //     // Cleanup the socket listener when the component unmounts or socket changes
-  //     return () => {
-  //       socket.off("seatUpdated");
-  //     };
-  //   }
-  // }, [socket]);
-
   useEffect(() => {
     if (socket) {
       socket.on("seatUpdated", (updatedSeat) => {
@@ -65,12 +64,12 @@ const App = () => {
       // Add the listener for the resetSeats event
       socket.on("resetSeats", () => {
         console.log("All seats have been reset.");
-        fetchData(); // Refetch the data to reflect the reset state
+        fetchData();
       });
 
       return () => {
         socket.off("seatUpdated");
-        socket.off("resetSeats"); // Clean up the listener
+        socket.off("resetSeats");
       };
     }
   }, [socket]);
@@ -132,67 +131,230 @@ const App = () => {
     setSelectedSeats([]);
   };
 
-  // async function handleResetApi() {
-  //   await axios.post("https://seat-management.onrender.com/api/seats");
-
-  //   setBtnClicked((prev) => !prev);
-  // }
-
   const handleResetSeats = () => {
     socket.emit("resetSeats", { userId });
-    setBtnClicked((prev) => !prev); // This will trigger a re-render
+    setBtnClicked((prev) => !prev);
     console.log("hii");
   };
 
   useEffect(() => {
     fetchData();
-  }, [socket, btnClicked]); // Only run this effect when socket changes
+  }, [socket, btnClicked]);
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
   return (
-    <Container>
-      <Box
-        className="screen"
-        sx={{ width: "100%", textAlign: "center", alignContent: "center" }}
-      >
-        <Typography variant="h3">Movie</Typography>
-      </Box>
-      <Compartment
-        data={data}
-        loading={loading}
-        onSeatSelect={handleSeatSelect}
-      />
-
-      <Box mt={3} textAlign="center">
-        <Typography variant="h6">
-          You have selected {selectedSeats.length} seats.
-        </Typography>
-        <Typography variant="body1">
-          Total Price: {selectedSeats.length * 10}$
-        </Typography>
-
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleBookSeats}
-          disabled={selectedSeats.length === 0}
+    <>
+      <Container>
+        <Box
+          className="screen"
+          sx={{ width: "100%", textAlign: "center", alignContent: "center" }}
         >
-          Book Seats
-        </Button>
-      </Box>
-      {youBooked && youBooked?.length !== 0 && (
-        <Box>
-          <Typography>You booked total {youBooked.length} seats</Typography>
-          <Typography> Your seat number are {youBooked.join(", ")}</Typography>
+          <Typography variant="h3">Movie</Typography>
         </Box>
-      )}
-      <Box mt={3} textAlign="center">
-        <Typography variant="h6">To reset all the seats</Typography>
+        <Compartment
+          data={data}
+          loading={loading}
+          onSeatSelect={handleSeatSelect}
+        />
 
-        <Button variant="contained" color="primary" onClick={handleResetSeats}>
-          Reset Seats
-        </Button>
-      </Box>
-    </Container>
+        {/* <Box mt={3} textAlign="center">
+          <Typography variant="h6">
+            You have selected {selectedSeats.length} seats.
+          </Typography>
+          <Typography variant="body1">
+            Total Price: {selectedSeats.length * 10}$
+          </Typography>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleBookSeats}
+            disabled={selectedSeats.length === 0}
+          >
+            Book Seats
+          </Button>
+        </Box>
+      
+        {youBooked && youBooked?.length !== 0 && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "20px",
+            }}
+          >
+            <Button onClick={handleOpen} variant="contained" color="primary">
+              Your booked tickets
+            </Button>
+            <Backdrop open={open} sx={{ zIndex: 0 }} />
+            <Dialog
+              open={open}
+              onClose={handleClose}
+              maxWidth="sm"
+              fullWidth
+              sx={{
+                "& .MuiDialog-paper": {
+                  backdropFilter: "blur(10px)", // Apply blur effect to the background
+                },
+              }}
+            >
+              <DialogTitle align="center">Your Movie Ticket</DialogTitle>
+              <DialogContent sx={{ boxSizing: "border-box", width: "100%" }}>
+                <MovieCard
+                  movieName="Guardians of the Galaxy Vol. 3"
+                  date="2024-12-15"
+                  time="7:00 PM"
+                  seats={youBooked.length}
+                  seatNumber={youBooked}
+                  price={15.99}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleClose} color="primary">
+                  Close
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </div>
+        )}
+        <Box mt={3} textAlign="center">
+          <Typography variant="h6">To reset all the seats</Typography>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleResetSeats}
+          >
+            Reset Seats
+          </Button>
+        </Box> */}
+        <Box>
+          <Grid container spacing={3} justifyContent="center" mt={3}>
+            {/* Seat Selection Summary */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    You have selected {selectedSeats.length} seat
+                    {selectedSeats.length > 1 ? "s" : ""}
+                  </Typography>
+                  <Divider sx={{ marginBottom: 2 }} />
+                  <Typography
+                    variant="body1"
+                    sx={{ fontWeight: "bold", fontSize: "1.2rem" }}
+                  >
+                    Total Price: ${selectedSeats.length * 10}
+                  </Typography>
+                  <Box mt={2} textAlign="center">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleBookSeats}
+                      disabled={selectedSeats.length === 0}
+                      sx={{
+                        width: "200px",
+                        borderRadius: 2,
+                        boxShadow: 2,
+                        "&:hover": {
+                          backgroundColor: "#4caf50",
+                        },
+                      }}
+                    >
+                      Book Seats
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Reset Seats and Show Booked Tickets */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Box
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                spacing={2}
+              >
+                {/* Show Booked Tickets Button */}
+                {youBooked && youBooked?.length !== 0 && (
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={handleOpen}
+                    sx={{
+                      width: "200px",
+                      marginBottom: 2,
+                      borderRadius: 2,
+                      boxShadow: 2,
+                      "&:hover": {
+                        backgroundColor: "#ff5722",
+                      },
+                    }}
+                  >
+                    Your Tickets
+                  </Button>
+                )}
+
+                {/* Reset Seats Button */}
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={handleResetSeats}
+                  sx={{
+                    width: "200px",
+                    borderRadius: 2,
+                    boxShadow: 2,
+                    "&:hover": {
+                      backgroundColor: "#ff1744",
+                    },
+                  }}
+                >
+                  Reset Seats
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+        {/* Booked Tickets Dialog */}
+        {youBooked && youBooked?.length !== 0 && (
+          <Backdrop open={open} sx={{ zIndex: 0 }} />
+        )}
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          maxWidth="sm"
+          fullWidth
+          sx={{
+            "& .MuiDialog-paper": {
+              backdropFilter: "blur(10px)", // Apply blur effect to the background
+            },
+          }}
+        >
+          <DialogTitle align="center">Your Movie Ticket</DialogTitle>
+          <DialogContent sx={{ boxSizing: "border-box", width: "100%" }}>
+            <MovieCard
+              movieName="Guardians of the Galaxy Vol. 3"
+              date="2024-12-15"
+              time="7:00 PM"
+              seats={youBooked.length}
+              seatNumber={youBooked}
+              price={15.99}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="primary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
+    </>
   );
 };
 
