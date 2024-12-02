@@ -262,7 +262,7 @@ const App = () => {
                         borderRadius: 2,
                         boxShadow: 2,
                         "&:hover": {
-                          backgroundColor: "#4caf50",
+                          backgroundColor: "#0080ff",
                         },
                       }}
                     >
@@ -285,7 +285,7 @@ const App = () => {
                 {youBooked && youBooked?.length !== 0 && (
                   <Button
                     variant="contained"
-                    color="secondary"
+                    backgroundColor="#1876d3"
                     onClick={handleOpen}
                     sx={{
                       width: "200px",
@@ -293,7 +293,7 @@ const App = () => {
                       borderRadius: 2,
                       boxShadow: 2,
                       "&:hover": {
-                        backgroundColor: "#ff5722",
+                        backgroundColor: "#0080ff",
                       },
                     }}
                   >
@@ -340,7 +340,7 @@ const App = () => {
           <DialogContent sx={{ boxSizing: "border-box", width: "100%" }}>
             <MovieCard
               movieName="Guardians of the Galaxy Vol. 3"
-              date="2024-12-15"
+              date="2025-01-15"
               time="7:00 PM"
               seats={youBooked.length}
               seatNumber={youBooked}
